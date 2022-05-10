@@ -1,5 +1,5 @@
 const express = require('express');
-const req = require('express/lib/request');
+const ejs = require('ejs'); //template engine ejs module
 const path = require('path');
 const app = express();
 
@@ -14,15 +14,26 @@ const app = express();
 //   next() // bir sonraki middleware ilerlemesi için
 // }
 
+// TEMPLATE ENGINE
+app.set('view engine', 'ejs');
+
 //STATIC FILES -- MIDDLEWARES
-app.use(express.static('public')) //middleware'i kullanmak için use fonk kullanılır
+app.use(express.static('public')); // public adlı bir dizinde görüntüleri, CSS dosyalarını ve JavaScript dosyalarını sunmak için
+//middleware'i kullanmak için use fonk kullanılır
 // app.use(myLogger); // myLogger middleware çağırdık
 // app.use(myLogger2); // myLogger2 middleware çağırdık
+// https://expressjs.com/en/starter/static-files.html#serving-static-files-in-express
 
+//ROUTES
 app.get('/', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'temp/index.html'))
+  res.render('index'); // views klasörü içerisindeki index.ejs dosyasını render edecek
 });
-
+app.get('/about', (req, res) => {
+  res.render('about'); // views klasörü içerisindeki about.ejs dosyasını render edecek
+});
+app.get('/add', (req, res) => {
+  res.render('add'); // views klasörü içerisindeki add.ejs dosyasını render edecek
+});
 const port = 3000;
 app.listen(port, () => {
   console.log(`Sunucu ${port} portunda başlatıldı..`);
