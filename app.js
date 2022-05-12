@@ -5,13 +5,11 @@ const ejs = require('ejs'); //template engine ejs module
 const path = require('path');
 const Photo = require('./models/Photo');
 
-
 // CONNECT DB
 mongoose.connect('mongodb://localhost/pcat-test-db', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
 
 // // mylogger middleware
 // const myLogger = (req, res, next) => {
@@ -43,10 +41,21 @@ app.use(express.json()); // datayı json formatına dondur
 
 //ROUTES
 app.get('/', async (req, res) => {
-  const photos = await Photo.find({})// template enginin içinde dinamik olarak fotoğraflarında gorunsun
-  res.render('index', { // views klasörü içerisindeki index.ejs dosyasını render edecek
-    photos 
-  }); 
+  const photos = await Photo.find({}); // template enginin içinde dinamik olarak fotoğrafların da gorunsun
+  res.render('index', {
+    // views klasörü içerisindeki index.ejs dosyasını render edecek
+    photos,
+  });
+});
+app.get('/photos/:id', async (req, res) => {
+  // index.ejs'de foto linkine tanımlanan /photos/<%= photos[i]._id %> href'in id kısmını parametre olarak verdik
+  // console.log(req.params.id) // req.params ile yukarıda tanımlanan id parametresini yakaldık
+  //res.render('about'); // views klasörü içerisindeki about.ejs dosyasını render edecek
+  const photo = await Photo.findById(req.params.id); // hangi fotoya aait olan bilgileri istiyorsak onu cek ve photo.ejs template'ine gönder
+  res.render('photo', {
+    // buradaki photo idisini buldugumuz photo
+    photo,
+  });
 });
 app.get('/about', (req, res) => {
   res.render('about'); // views klasörü içerisindeki about.ejs dosyasını render edecek
@@ -55,10 +64,11 @@ app.get('/add', (req, res) => {
   res.render('add'); // views klasörü içerisindeki add.ejs dosyasını render edecek
 });
 
-app.post('/photos', async (req, res) => { // async fonk model yuaurdımıyla vt olusurulan document olana kadar await olacak bekleyecek
+app.post('/photos', async (req, res) => {
+  // async fonk; model yardımıyla vt'da olusurulan document olana kadar await olacak/bekleyecek
   // add.ejs form alanındaki action name /photos
   // console.log(req.body); // form'a girilen verileri yazıdr
-  await Photo.create(req.body) // photo modeli vt'na gonderecek
+  await Photo.create(req.body); // photo modeli vt'na gonderecek
   res.redirect('/'); // ardından anasayfaya yonlendir ve donguyu bitir yoksa surekli doner
 });
 
