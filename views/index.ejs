@@ -17,10 +17,7 @@
             </div>
 
             <div id="tm-video-container">
-                <video autoplay muted loop id="tm-video">
-                    <!-- <source src="video/sunset-timelapse-video.mp4" type="video/mp4"> -->
-                        <source src="video/wheat-field.mp4" type="video/mp4">
-                </video>    
+                  <img src="img/main_bg.jpg" alt="">
             </div>
             
             <i id="tm-video-control-button" class="fas fa-pause"></i>
@@ -41,7 +38,7 @@
                                     <li class="nav-item tm-category-item"><a href="#" class="nav-link tm-category-link">Actions</a></li>
                                     <li class="nav-item tm-category-item"><a href="#" class="nav-link tm-category-link">Featured</a></li>
                                 </ul>
-                            </div>        
+                            </div>
                         </div>
                     </div>
                     
@@ -51,7 +48,7 @@
 
                         <div class="col-lg-4 col-md-6 col-sm-12 tm-catalog-item">
                             <div class="position-relative tm-thumbnail-container">
-                                <img src="img/tn-01.jpg" alt="Image" class="img-fluid tm-catalog-item-img">    
+                                <img src="<%= photos[i].image %>" alt="Image" class="img-fluid tm-catalog-item-img">    
                                 <a href="/photos/<%= photos[i]._id %>" class="position-absolute tm-img-overlay">
                                     <i class="fas fa-play tm-overlay-icon"></i>
                                 </a>
@@ -67,14 +64,23 @@
 
                     <!-- Catalog Paging Buttons -->
                     <div>
-                        <ul class="nav tm-paging-links">
-                            <li class="nav-item active"><a href="#" class="nav-link tm-paging-link">1</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link tm-paging-link">2</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link tm-paging-link">3</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link tm-paging-link">4</a></li>
-                            <li class="nav-item"><a href="#" class="nav-link tm-paging-link">></a></li>
-                        </ul>
+                        <%  if(pages > 0) { %> <!-- sayfalar yoksa pagination'u gosterme-->
+                            <ul class="nav tm-paging-links">
+                                <% for (i=1; i<=pages; i++) { %> <!-- tum sayfa rakamlarını yazıdrma-->
+                                    <% if (i == current) { %> <!-- hangi sayfadaysak onu active yap-->
+                                        <li class="nav-item active"><a href="/?page=<%= i %>" class="nav-link tm-paging-link"><%= i %></a></li>
+                                    <% } else if (i < pages) { %>
+                                        <li class="nav-item"><a href="/?page=<%= i %>" class="nav-link tm-paging-link"><%= i %></a></li>
+                                    <% } else { %>
+                                        <li class="nav-item"><a href="/?page=<%= i %>" class="nav-link tm-paging-link">></a></li>
+                                    <% } %>
+                                <% } %>
+                            </ul>
+                        <% } %>
                     </div>
+
+
+
                 </main>
 
                 <%- include('partials/_footer') -%>

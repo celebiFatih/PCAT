@@ -1,15 +1,24 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const fileUpload = require('express-fileupload'); //Görseli göndermek için
+const methodOverride = require('method-override'); // güncelleme yaparken put işlemini post ile simule etmnek için
 const app = express();
 const ejs = require('ejs'); //template engine ejs module
-const path = require('path');
-const Photo = require('./models/Photo');
+const photoController = require('./controllers/photoControllers');
+const pageController = require('./controllers/pageControllers');
 
 // CONNECT DB
-mongoose.connect('mongodb://localhost/pcat-test-db', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+// 'mongodb://localhost/pcat-test-db' -->localde
+mongoose
+  .connect(
+    'mongodb+srv://fatih:08TYMIzG277mkMnj@cluster0.yaxxk.mongodb.net/pcat-db?retryWrites=true&w=majority'
+  ) // mongoose connect bir promise döner
+  .then(() => {
+    console.log('DB CONNECTED!');
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
 // // mylogger middleware
 // const myLogger = (req, res, next) => {
@@ -30,49 +39,46 @@ mongoose.connect('mongodb://localhost/pcat-test-db', {
 */
 app.set('view engine', 'ejs');
 
-//STATIC FILES -- MIDDLEWARES
+// MIDDLEWARES
 //middleware'i kullanmak için use fonk kullanılır
 // app.use(myLogger); // myLogger middleware çağırdık
 // app.use(myLogger2); // myLogger2 middleware çağırdık
 // https://expressjs.com/en/starter/static-files.html#serving-static-files-in-express
-app.use(express.static('public')); // public adlı bir dizinde görüntüleri, CSS dosyalarını ve JavaScript dosyalarını sunmak için
+app.use(express.static('public')); // public adlı bir dizinde görüntüleri, CSS dosyalarını ve JavaScript dosyalarını sunmak için--static files
 app.use(express.urlencoded({ extended: true })); // url'deki datayı oku
 app.use(express.json()); // datayı json formatına dondur
+app.use(fileUpload()); //express-fileupload modülünü kullanmak için
+app.use(
+  methodOverride('_method', {
+    methods: ['POST', 'GET'], // gerektiğinde hangi metotların override edileceği expilicit-ayrıca belirtildi--delete işlemi bir get işlemi
+  })
+);
 
 //ROUTES
-app.get('/', async (req, res) => {
-  const photos = await Photo.find({}); // template enginin içinde dinamik olarak fotoğrafların da gorunsun
-  res.render('index', {
-    // views klasörü içerisindeki index.ejs dosyasını render edecek
-    photos,
-  });
-});
-app.get('/photos/:id', async (req, res) => {
-  // index.ejs'de foto linkine tanımlanan /photos/<%= photos[i]._id %> href'in id kısmını parametre olarak verdik
-  // console.log(req.params.id) // req.params ile yukarıda tanımlanan id parametresini yakaldık
-  //res.render('about'); // views klasörü içerisindeki about.ejs dosyasını render edecek
-  const photo = await Photo.findById(req.params.id); // hangi fotoya aait olan bilgileri istiyorsak onu cek ve photo.ejs template'ine gönder
-  res.render('photo', {
-    // buradaki photo idisini buldugumuz photo
-    photo,
-  });
-});
-app.get('/about', (req, res) => {
-  res.render('about'); // views klasörü içerisindeki about.ejs dosyasını render edecek
-});
-app.get('/add', (req, res) => {
-  res.render('add'); // views klasörü içerisindeki add.ejs dosyasını render edecek
-});
+//tum fotoları indexs template'ine yolla
+app.get('/', photoController.getAllPhotos);
 
-app.post('/photos', async (req, res) => {
-  // async fonk; model yardımıyla vt'da olusurulan document olana kadar await olacak/bekleyecek
-  // add.ejs form alanındaki action name /photos
-  // console.log(req.body); // form'a girilen verileri yazıdr
-  await Photo.create(req.body); // photo modeli vt'na gonderecek
-  res.redirect('/'); // ardından anasayfaya yonlendir ve donguyu bitir yoksa surekli doner
-});
+app.get('/photos/:id', photoController.getPhoto);
 
-const port = 3000;
+//yeni foto olusturma
+app.post('/photos', photoController.createPhoto);
+
+// foto guncelleme
+app.put('/photos/:id', photoController.updatePhoto);
+
+//foto silme
+app.delete('/photos/:id', photoController.deletePhoto);
+
+// get about page
+app.get('/about', pageController.getAboutPage);
+
+// get add page
+app.get('/add', pageController.getAddPage);
+
+// get edit page
+app.get('/photos/edit/:id', pageController.getEditPage);
+
+const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Sunucu ${port} portunda başlatıldı..`);
 });
